@@ -8,7 +8,7 @@
 - Tampilan SPA ringan, cocok diakses di mana saja
 
 ## Cara Pakai
-1. Clone repositori ini
+1. Clone/Download repositori ini
 2. Buka `index.html` langsung di browser
 
 ## Credits
