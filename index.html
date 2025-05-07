@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pelukan Virtual</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&family=Raleway:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Quicksand', 'Raleway', sans-serif;
+      color: #fff;
+      background: linear-gradient(-45deg, #3a2c64, #4e3c81, #2b3467, #5e4b8b);
+      background-size: 400% 400%;
+      animation: gradientFlow 15s ease infinite;
+      transition: background 1s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    #tsparticles {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      top: 0;
+      left: 0;
+    }
+
+    .page {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: fadeInSoft 1.5s ease forwards;
+    }
+
+    .active {
+      display: flex;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 16px;
+      font-family: 'Raleway', sans-serif;
+      font-weight: 700;
+    }
+
+    p {
+      font-size: 1.3rem;
+      margin-bottom: 30px;
+      max-width: 700px;
+      font-family: 'Quicksand', sans-serif;
+      font-weight: 600;
+    }
+
+    button, .option {
+      padding: 14px 28px;
+      font-size: 1.1rem;
+      background-color: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+      margin: 10px;
+      font-family: 'Quicksand', sans-serif;
+      font-weight: 600;
+    }
+
+    button:hover, .option:hover {
+      background-color: rgba(255, 255, 255, 0.25);
+      transform: scale(1.05);
+    }
+
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      max-width: 700px;
+    }
+
+    input[type="text"] {
+      padding: 12px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      width: 250px;
+      margin-bottom: 16px;
+      text-align: center;
+      font-family: 'Quicksand', sans-serif;
+    }
+
+    #music-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 10px 16px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      z-index: 10;
+      font-family: 'Quicksand', sans-serif;
+    }
+
+    @keyframes fadeInSoft {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes gradientFlow {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+  </style>
+</head>
+<body>
+  <div id="tsparticles"></div>
+
+  <audio id="bgMusic" loop>
+    <source src="calm.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="clickSound" src="click.wav" preload="auto"></audio>
+
+  <button id="music-toggle" onclick="toggleMusic()">🔈 Matikan Musik</button>
+
+  <!-- Landing Page -->
+  <div id="landing-page" class="page active">
+    <h1>Hallo, kamu lagi cape yahh.</h1>
+    <p>Sebelum kita mulai, boleh tahu namamu?</p>
+    <input type="text" id="userName" placeholder="Tulis namamu di sini...">
+    <button onclick="goToPilihPage()">Lanjut</button>
+  </div>
+
+  <!-- Pilih Alasan Page -->
+  <div id="pilih-page" class="page">
+    <h1>Apa yang kamu rasakan sekarang?</h1>
+    <div class="options">
+      <div class="option" onclick="showMessage('Kerjaan Berat')">💼 Kerjaan Berat</div>
+      <div class="option" onclick="showMessage('Cinta Gagal')">💔 Cinta Gagal</div>
+      <div class="option" onclick="showMessage('Kesepian')">🕯️ Kesepian</div>
+      <div class="option" onclick="showMessage('Overthinking')">💭 Overthinking</div>
+      <div class="option" onclick="showMessage('Tekanan Hidup')">🌪️ Tekanan Hidup</div>
+      <div class="option" onclick="showMessage('Lainnya')">✨ Lainnya</div>
+    </div>
+  </div>
+
+  <!-- Pesan Penyemangat Page -->
+  <div id="message-page" class="page">
+    <h1 id="message-title"></h1>
+    <p id="message-text"></p>
+    <button onclick="regenerateMessage()">Bisikin aku lagi dong</button>
+    <button onclick="showPage('pilih-page')">Kembali pilih lagi</button>
+  </div>
+
+  <script>
+    let userName = "";
+    let currentTopic = "";
+    const music = document.getElementById("bgMusic");
+    const musicToggle = document.getElementById("music-toggle");
+
+    function toggleMusic() {
+      if (music.paused) {
+        music.play();
+        musicToggle.innerText = "🔈 Matikan Musik";
+      } else {
+        music.pause();
+        musicToggle.innerText = "🔇 Nyalakan Musik";
+      }
+    }
+
+    const quotes = {
+      "Kerjaan Berat": [
+        "[nama], kamu hebat banget... nggak semua orang bisa bertahan sejauh ini seperti kamu.",
+        "[nama], kamu mungkin lelah sekarang, tapi percaya deh, usahamu itu nggak sia-sia.",
+        "Kadang diam kamu itu tandanya kamu sedang kuat, [nama].",
+        "[nama], istirahat itu bukan menyerah. Itu bentuk sayangmu ke diri sendiri.",
+        "[nama], kamu udah melangkah jauh. Jangan remehkan perjuanganmu hari ini.",
+        "Ingat ya [nama], satu langkah kecil hari ini lebih baik dari nggak bergerak sama sekali.",
+        "Nggak apa-apa istirahat sebentar, [nama]. Kamu nggak harus kuat terus menerus.",
+        "[nama], capek itu wajar. Tapi kamu udah luar biasa karena terus mencoba.",
+        "Semua usaha kamu bakal ada artinya, [nama]. Percaya aja meski belum kelihatan.",
+        "[nama], kamu nggak sendiri. Banyak yang juga lagi berjuang, termasuk kamu. Hebat.",
+        "Kamu tetap berharga meski belum selesai semuanya hari ini, [nama].",
+        "Kadang hasil terbaik datang setelah kamu hampir menyerah, [nama].",
+        "Tenang ya, [nama]. Hidupmu bukan tentang seberapa cepat, tapi seberapa tulus kamu jalanin.",
+        "[nama], jangan lupa tarik napas dalam-dalam. Dunia ini bisa nunggu.",
+        "Hari yang berat bukan berarti kamu lemah, [nama]. Itu bukti kamu bertahan.",
+        "[nama], bahkan langit pun butuh hujan untuk bersinar."
+      ],
+      "Cinta Gagal": [
+        "[nama], hati kamu layak untuk cinta yang lembut... yang nggak bikin luka.",
+        "Gagal itu bukan berarti kamu buruk, [nama]. Itu artinya kamu berani mencoba.",
+        "[nama], mungkin dia pergi... tapi kamu tetap utuh dan pantas dicintai.",
+        "Cinta bukan tentang siapa yang paling sempurna, tapi siapa yang mau bertahan. [nama], kamu layak.",
+        "Kalau dia memang takdirmu, dia akan kembali. Kalau tidak, kamu akan baik-baik saja, [nama].",
+        "[nama], jangan salahkan dirimu atas luka yang bukan kamu ciptakan.",
+        "Kadang perpisahan itu perlindungan, [nama]. Dari yang seharusnya nggak menetap.",
+        "[nama], lebih baik sendiri daripada bersama yang salah.",
+        "Hati kamu itu indah, [nama]. Suatu hari seseorang akan melihatnya dan tetap tinggal.",
+        "Kamu bukan kurang, kamu hanya belum bertemu yang cocok, [nama].",
+        "[nama], patah hati itu sakit, tapi dari sanalah kamu belajar mencintai dirimu lebih dalam."
+      ],
+      "Kesepian": [
+        "Kalau kamu ngerasa sendiri, [nama]... kamu tetap berharga dan layak dicintai.",
+        "[nama], sepi itu bukan musuh. Kadang dia datang biar kamu bisa lebih dengerin diri sendiri.",
+        "[nama], kesepian bukan karena kamu kurang. Kadang dunia hanya sedang diam saja.",
+        "Ada banyak yang peduli sama kamu, meski nggak selalu terlihat, [nama].",
+        "Pelan-pelan ya, [nama]. Hati yang kosong pun bisa kembali hangat.",
+        "[nama], kamu nggak harus buru-buru sembuh. Tapi kamu nggak sendiri."
+      ],
+      "Overthinking": [
+        "[nama], kamu nggak harus ngerti semuanya sekarang. Pelan-pelan aja, satu hal dalam satu waktu.",
+        "[nama], pikiranmu capek juga butuh istirahat. Kamu berhak untuk tenang.",
+        "Banyak hal yang kamu pikirkan belum tentu akan terjadi, [nama]. Yuk istirahat sebentar.",
+        "[nama], kadang ketenangan datang saat kamu berhenti mencari jawabannya sekarang juga."
+      ],
+      "Tekanan Hidup": [
+        "[nama], kamu kuat banget. Meski hidup berat, kamu tetap berdiri dan itu luar biasa.",
+        "Kamu mungkin belum sampai di tujuan, tapi kamu udah sangat jauh dari titik mulai, [nama].",
+        "[nama], kamu boleh merasa lelah. Tapi jangan pernah lupakan bahwa kamu berharga."
+      ],
+      "Lainnya": [
+        "Apa pun yang kamu rasain itu valid, [nama]. Terima kasih sudah bertahan sejauh ini.",
+        "[nama], kamu cukup. Sekarang, nanti, dan selalu.",
+        "Semua orang punya waktu terpuruknya, termasuk kamu, dan itu nggak bikin kamu buruk, [nama]."
+      ]
+    };
+
+
+    tsParticles.load("tsparticles", {
+      particles: {
+        number: { value: 60 },
+        color: { value: "#ffffff" },
+        opacity: { value: 0.3 },
+        size: { value: 2 },
+        move: { enable: true, speed: 0.6 },
+        shape: { type: "circle" }
+      },
+      background: { color: "transparent" }
+    });
+
+    function goToPilihPage() {
+      const input = document.getElementById("userName");
+      userName = input.value.trim();
+      if (userName) {
+        music.volume = 0.3;
+        music.play();
+        showPage('pilih-page');
+      } else {
+        alert("Masukin namamu dulu ya 💌");
+      }
+    }
+
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function showMessage(topic) {
+      currentTopic = topic;
+      regenerateMessage();
+      showPage('message-page');
+    }
+
+    function regenerateMessage() {
+      const msgList = quotes[currentTopic] || ["[nama], kamu nggak sendiri. Semuanya akan baik-baik saja."];
+      const raw = msgList[Math.floor(Math.random() * msgList.length)];
+      const finalText = raw.replaceAll("[nama]", userName);
+      document.getElementById('message-title').innerText = currentTopic;
+      document.getElementById('message-text').innerText = finalText;
+    }
+
+    // Play click sound on all buttons and options
+    document.addEventListener('DOMContentLoaded', () => {
+      const clickSound = document.getElementById('clickSound');
+      document.querySelectorAll('button, .option').forEach(el => {
+        el.addEventListener('click', () => {
+          clickSound.currentTime = 0;
+          clickSound.volume = 0.2;
+          clickSound.play();
+        });
+      });
+    });
+  </script>
+</body>
+</html>
