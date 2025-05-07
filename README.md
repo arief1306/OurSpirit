@@ -1,3 +1,5 @@
+“OurSpirit is a gentle motivation web app — created to comfort your soul when life feels too heavy to carry alone.”
+
 ## Fitur
 - Input nama → digunakan dalam kalimat penyemangat
 - Pilih topik perasaan → tampilkan motivasi sesuai
