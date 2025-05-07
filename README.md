@@ -1,3 +1,4 @@
+## OurSpirit 
 “OurSpirit is a gentle motivation web app — created to comfort your soul when life feels too heavy to carry alone.”
 
 ## Fitur
